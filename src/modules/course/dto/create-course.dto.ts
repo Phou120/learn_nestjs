@@ -34,11 +34,11 @@ export class CreateCourseDto {
 
   @IsDateString()
   @IsNotEmpty()
-  register_start_date: string;
+  registration_start_date: string;
 
   @IsDateString()
   @IsNotEmpty()
-  register_end_date: string;
+  registration_end_date: string;
 
   @IsDateString()
   @IsNotEmpty()

@@ -34,8 +34,8 @@ export class CourseService {
         max_student: body.max_student,
         duration_hours: body.duration_hours,
         price: body.price,
-        registration_start_date: new Date(body.register_start_date),
-        registration_end_date: new Date(body.register_end_date),
+        registration_start_date: new Date(body.registration_start_date),
+        registration_end_date: new Date(body.registration_end_date),
         start_date: new Date(body.start_date),
         end_date: new Date(body.end_date),
         description: body.description,
@@ -48,6 +48,36 @@ export class CourseService {
       console.error('Failed to create course:', error);
       throw new Error('Unable to create course');
     }
+  }
+
+  async getAllCourse(
+    query: GetAllCategoryDto,
+  ): Promise<PaginatedResponse<CourseOrmEntity>> {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+
+    const queryBuilder = this._course
+      .createQueryBuilder('course')
+      .innerJoinAndSelect('course.category', 'category')
+      .innerJoinAndSelect('course.teacher', 'teacher')
+      .orderBy('course.updated_at', 'DESC');
+
+    return paginateQueryBuilder(queryBuilder, page, limit);
+  }
+
+  async getCourseById(id: number): Promise<CourseOrmEntity> {
+    const course = await this._course
+      .createQueryBuilder('course')
+      .innerJoinAndSelect('course.category', 'category')
+      .innerJoinAndSelect('course.teacher', 'teacher')
+      .innerJoinAndSelect('teacher.user', 'user')
+      .where('course.id = :id', { id })
+      .getOne();
+
+    if (!course) {
+      throw new NotFoundException(`Course with ID ${id} not found`);
+    }
+    return course;
   }
 
   async updateCourse(
@@ -98,7 +128,9 @@ export class CourseService {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
 
-    const queryBuilder = this._courseCategory.createQueryBuilder('category');
+    const queryBuilder = this._courseCategory
+      .createQueryBuilder('category')
+      .orderBy('category.updated_at', 'DESC');
 
     return paginateQueryBuilder(queryBuilder, page, limit);
   }
@@ -131,6 +163,7 @@ export class CourseService {
       throw new BadRequestException(`The course category id ${id} not found.`);
     }
     courseCateg.name = body.name ?? courseCateg.name;
+    courseCateg.updated_at = new Date();
 
     return await this._courseCategory.save(courseCateg);
   }

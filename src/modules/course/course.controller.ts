@@ -28,6 +28,18 @@ export class CourseController {
     return await this._courseService.createCourse(body);
   }
 
+  @Get('all-courses')
+  async getAllCourse(
+    @Query() query: GetAllCategoryDto,
+  ): Promise<PaginatedResponse<CourseOrmEntity>> {
+    return await this._courseService.getAllCourse(query);
+  }
+
+  @Get('by-id/:id')
+  async getCourseById(@Param('id') id: number): Promise<CourseOrmEntity> {
+    return await this._courseService.getCourseById(id);
+  }
+
   @Put('update-course/:id')
   async updateCourse(
     @Param('id') id: number,

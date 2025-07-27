@@ -13,6 +13,8 @@ import { hashPassword } from 'src/common/utils/hash-password';
 import { DataSource, Repository } from 'typeorm';
 import { CreateTeacherDto } from './dto/create.dto';
 import { UpdateTeacherDto } from './dto/update.dto';
+import { PaginatedResponse } from 'src/common/pagination/pagination.response';
+import { paginateQueryBuilder } from 'src/common/utils/pagination.builder';
 
 @Injectable()
 export class TeacherService {
@@ -120,5 +122,19 @@ export class TeacherService {
       console.error(error);
       throw error;
     }
+  }
+
+  async getAllTeachers(
+    query: any,
+  ): Promise<PaginatedResponse<TeacherOrmEntity>> {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+
+    const queryBuilder = this._teacherRepository
+      .createQueryBuilder('teacher')
+      .innerJoinAndSelect('teacher.user', 'user')
+      .orderBy('teacher.updated_at', 'DESC');
+
+    return paginateQueryBuilder(queryBuilder, page, limit);
   }
 }

@@ -1,18 +1,19 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { TeacherService } from './teacher.service';
 import { CreateTeacherDto } from './dto/create.dto';
 import { TeacherOrmEntity } from 'src/common/infrastructure/database/typeorms/entities/teacher.orm';
 import { UpdateTeacherDto } from './dto/update.dto';
+import { PaginatedResponse } from 'src/common/pagination/pagination.response';
 
 @Controller('teacher')
 export class TeacherController {
   constructor(private readonly _teacherService: TeacherService) {}
   @Get('get-all')
-  getAll() {
-    return 'paovang';
+  getAll(@Query() query: any): Promise<PaginatedResponse<TeacherOrmEntity>> {
+    return this._teacherService.getAllTeachers(query);
   }
 
-  @Post('create-teacher')
+  @Post()
   async createTeacher(
     @Body() body: CreateTeacherDto,
   ): Promise<TeacherOrmEntity> {

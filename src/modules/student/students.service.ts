@@ -19,7 +19,7 @@ import { StudentEducationOrmEntity } from 'src/common/infrastructure/database/ty
 import { AddEducationDto } from './dto/add-profile.dto';
 import { CourseOrmEntity } from 'src/common/infrastructure/database/typeorms/entities/course.orm';
 import { ApplyCourseOrmEntity } from 'src/common/infrastructure/database/typeorms/entities/apply-course.orm';
-import { MailService } from 'src/common/infrastructure/mailer/mail.service';
+// import { MailService } from 'src/common/infrastructure/mailer/mail.service';
 
 @Injectable()
 export class StudentService {
@@ -39,7 +39,7 @@ export class StudentService {
     private _user: Repository<UserOrmEntity>,
     @InjectRepository(ApplyCourseOrmEntity)
     private _applyCourse: Repository<ApplyCourseOrmEntity>,
-    private readonly _mailService: MailService,
+    // private readonly _mailService: MailService,
   ) {}
   async create(body: CreateStudentDto): Promise<StudentOrmEntity> {
     try {
@@ -48,6 +48,14 @@ export class StudentService {
           this.dataSource,
           async (manager) => {
             const passwordHash = await hashPassword(body.password);
+
+            const existingUser = await manager.findOne(UserOrmEntity, {
+              where: { email: body.email },
+            });
+
+            if (existingUser) {
+              throw new BadRequestException('Email already exists');
+            }
 
             const user = manager.create(UserOrmEntity, {
               username: body.name,
@@ -62,7 +70,7 @@ export class StudentService {
             });
 
             /** Send Email */
-            await this._mailService.sendEmail(body.email, body.name);
+            // await this._mailService.sendEmail(body.email, body.name);
 
             return await manager.save(StudentOrmEntity, student);
           },
